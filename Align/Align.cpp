@@ -19,8 +19,8 @@ using namespace cv;
 
 CFaceAlignDll* g_pAlign;
 static CascadeClassifier cascade;
-const char* face_cascade_name = "haarcascade_frontalface_alt2.xml";
-static bool isShowFace = false;
+const char* face_cascade_name = "lbpcascade_frontalface.xml";
+static bool isShowFace = true;
 void detectAndDisplay(Mat& image, RECT* dectBox);
 void showAlignedFace(Mat& img, float* ptsPos, int ptsNum);
 
@@ -137,7 +137,7 @@ int PointNum()
 	 if(srcImg.GetLastStatus() == Ok)
 	 {		
 
-		 const WCHAR configpath[]=L"F:\\File\\Project\\ASM\\Code\\Align\\Debug\\casm.bin";
+		 const WCHAR configpath[]=L"casm.bin";
 		 InitAlign(configpath); //input file path of casm.bin
 
 		 Gdiplus::Rect detRect(0, 0, srcImg.GetWidth(), srcImg.GetHeight());
@@ -187,7 +187,8 @@ int PointNum()
 		 }
 		 image.release();
 		 delete ptsPos1;
-		 srcImg.UnlockBits(&lkData);     
+		 srcImg.UnlockBits(&lkData); 
+		 DestroyAlign();
 	 }
 	 srcImageFile = "";
 	 resImageFile = "";
@@ -245,8 +246,8 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	imageFilePath.append(imgDrive);
 	imageFilePath.append(imgPath);
-	//imageFilePath.append("bmp\\");
-	ProcPicDir(imageFilePath.c_str());
+	imageFilePath.append("\man.bmp");
+	procPic(imageFilePath.c_str());
 	return 0;
 }
 
@@ -262,7 +263,7 @@ void detectAndDisplay(Mat& img, RECT* detectBox)
 	//Detect the biggest face
 	double t = (double)cvGetTickCount(); 
 	std::vector<cv::Rect> faces; 
-	cascade.detectMultiScale(small_img, faces, 1.1, 2, CV_HAAR_FIND_BIGGEST_OBJECT, cvSize(30, 30)); 
+	cascade.detectMultiScale(small_img, faces, 1.1, 2, CV_HAAR_FIND_BIGGEST_OBJECT, cvSize(20, 20)); 
 	t = (double)cvGetTickCount() - t; 
 	printf( "detection time = %gms\n", t/((double)cvGetTickFrequency()*1000.) );
 
@@ -277,7 +278,7 @@ void detectAndDisplay(Mat& img, RECT* detectBox)
 		if(isShowFace)
 		{
 			namedWindow("image", CV_WINDOW_AUTOSIZE); //´´½¨´°¿Ú
-			//imshow("image",img);
+			imshow("image",img);
 			cvWaitKey(0); 
 			destroyWindow("image");
 		}
