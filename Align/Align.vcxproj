@@ -40,8 +40,9 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>D:\OpenCV2.2\include;D:\OpenCV2.2\include\opencv;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\OpenCV2.2\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\OpenCV2.4.4\build\include\opencv;D:\OpenCV2.4.4\build\include;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\OpenCV2.4.4\build\x86\vc10\lib;$(LibraryPath)</LibraryPath>
+    <ExecutablePath>D:\OpenCV2.4.4\build\x86\vc10\bin;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -57,7 +58,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opencv_core220d.lib;opencv_highgui220d.lib;opencv_video220d.lib;opencv_ml220d.lib;opencv_legacy220d.lib;opencv_imgproc220d.lib;opencv_objdetect220d.lib;gdiplus.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opencv_core244d.lib;opencv_features2d244d.lib;opencv_highgui244d.lib;opencv_legacy244d.lib;opencv_nonfree244d.lib;opencv_imgproc244d.lib;opencv_objdetect244d.lib;gdiplus.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -80,12 +81,16 @@
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CThinPlateSpline.h" />
     <ClInclude Include="FaceAlignDll.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Align.cpp" />
+    <ClCompile Include="CThinPlateSpline.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>

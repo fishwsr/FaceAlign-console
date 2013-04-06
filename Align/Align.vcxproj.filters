@@ -27,12 +27,18 @@
     <ClInclude Include="FaceAlignDll.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="CThinPlateSpline.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Align.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CThinPlateSpline.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

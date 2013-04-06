@@ -7,9 +7,11 @@
 #include <afxwin.h>
 #include <windows.h> 
 #include <gdiplus.h> 
-#include <cv.h>
-#include <cxcore.h>
-#include <highgui.h>
+
+
+
+#include "CThinPlateSpline.h"
+
 #include "FaceAlignDll.h"
 #pragma comment(lib,"FaceAlignDll.lib")
 
@@ -20,7 +22,7 @@ using namespace cv;
 CFaceAlignDll* g_pAlign;
 static CascadeClassifier cascade;
 const char* face_cascade_name = "lbpcascade_frontalface.xml";
-static bool isShowFace = true;
+static bool isShowFace = false;
 void detectAndDisplay(Mat& image, RECT* dectBox);
 void showAlignedFace(Mat& img, float* ptsPos, int ptsNum);
 
@@ -124,7 +126,7 @@ int PointNum()
 }
 
 
- void procPic(CString strFilePath)
+ void procPic(CString strFilePath, float* ptsPos1)
  {
 	 int Pos = strFilePath.GetLength() - strFilePath.ReverseFind(TEXT('\\')) -1;
 	 cout<<strFilePath.Right(Pos)<<":"<<endl;
@@ -151,7 +153,7 @@ int PointNum()
 			 exit(0);
 		 }
 		 ptsNum = ptsNum  <<1;
-		 float *ptsPos1= new float[ptsNum];
+		 //ptsPos1= new float[ptsNum];
 
 		 Mat image = imread(srcImageFile);
 		 //CvSize dst_cvsize;
@@ -186,7 +188,7 @@ int PointNum()
 			 return;
 		 }
 		 image.release();
-		 delete ptsPos1;
+		 //delete ptsPos1;
 		 srcImg.UnlockBits(&lkData); 
 		 DestroyAlign();
 	 }
@@ -194,62 +196,42 @@ int PointNum()
 	 resImageFile = "";
  }
 
- void ProcPicDir(CString strPicDir)
- {
-	 CFileFind fileFinder;
+ //void ProcPicDir(CString strPicDir)
+ //{
+	// CFileFind fileFinder;
 
-	 if (strPicDir.Right(1) == TEXT("\\"))
-	 {
-		 int nPos  = strPicDir.ReverseFind(TEXT('\\'));
-		 strPicDir = strPicDir.Left(nPos);
-	 }
+	// if (strPicDir.Right(1) == TEXT("\\"))
+	// {
+	//	 int nPos  = strPicDir.ReverseFind(TEXT('\\'));
+	//	 strPicDir = strPicDir.Left(nPos);
+	// }
 
-	 CString strPicFile = TEXT("");
-	 strPicFile.Format(TEXT("%s\\%s"),strPicDir,TEXT("*.*"));
+	// CString strPicFile = TEXT("");
+	// strPicFile.Format(TEXT("%s\\%s"),strPicDir,TEXT("*.*"));
 
-	 BOOL bWorking = fileFinder.FindFile(strPicFile);
-	 while (bWorking)
-	 {   
-		 bWorking = fileFinder.FindNextFile();
-		 if (fileFinder.IsDots())
-		 {
-			 continue;
-		 }
+	// BOOL bWorking = fileFinder.FindFile(strPicFile);
+	// while (bWorking)
+	// {   
+	//	 bWorking = fileFinder.FindNextFile();
+	//	 if (fileFinder.IsDots())
+	//	 {
+	//		 continue;
+	//	 }
 
-		 CString strFilePath = fileFinder.GetFilePath();
-		 if (!fileFinder.IsDirectory())
-		 {      
-			 int nPos = strFilePath.ReverseFind(TEXT('.'));
-			 CString strExt = strFilePath.Right(strFilePath.GetLength() - nPos - 1);
-			 if (strExt.CompareNoCase(TEXT("bmp"))  == 0)
-			 {   
-				 procPic(strFilePath);
+	//	 CString strFilePath = fileFinder.GetFilePath();
+	//	 if (!fileFinder.IsDirectory())
+	//	 {      
+	//		 int nPos = strFilePath.ReverseFind(TEXT('.'));
+	//		 CString strExt = strFilePath.Right(strFilePath.GetLength() - nPos - 1);
+	//		 if (strExt.CompareNoCase(TEXT("bmp"))  == 0)
+	//		 {   
+	//			 procPic(strFilePath);
 
-			 }
-		 }
-	 }
-	 fileFinder.Close();
- }
-
-
-
-int _tmain(int argc, _TCHAR* argv[])
-{
-	ULONG_PTR m_gdiplusToken; 
-	GdiplusStartupInput gdiplusStartupInput;     //声明
-	GdiplusStartup(&m_gdiplusToken, &gdiplusStartupInput, NULL);    //启动
-
-	string imageFilePath="";
-	char imgPath[MAX_PATH];
-	char imgDrive[_MAX_DRIVE];
-	_splitpath(_pgmptr,imgDrive,imgPath,NULL,NULL);
-
-	imageFilePath.append(imgDrive);
-	imageFilePath.append(imgPath);
-	imageFilePath.append("\man.bmp");
-	procPic(imageFilePath.c_str());
-	return 0;
-}
+	//		 }
+	//	 }
+	// }
+	// fileFinder.Close();
+ //}
 
 void detectAndDisplay(Mat& img, RECT* detectBox) 
 { 
@@ -337,4 +319,149 @@ void showAlignedFace(Mat& img, float* ptsPos, int ptsNum)
 		cvWaitKey(0); 
 		destroyWindow("image");
 	}
+}
+
+void ORBmatching(float* posPoint)
+{
+	Mat img_1_Orb = imread("..\\Debug\\sheldon1.bmp");
+	Mat img_2_Orb = imread("..\\Debug\\sheldon2.bmp");
+
+	ORB orb;
+	vector<KeyPoint> keyPoints_1_Orb, keyPoints_2_Orb;
+	Mat descriptors_1_Orb, descriptors_2_Orb;
+	keyPoints_1_Orb.resize(94);
+	for(int i=0;i<94;i++)
+	{
+		keyPoints_1_Orb[i].pt.x = posPoint[2*i];
+		keyPoints_1_Orb[i].pt.y = posPoint[2*i+1];
+	}
+
+	if( !cascade.load( face_cascade_name ) )
+	{ 
+		fprintf( stderr, "ERROR: Could not load classifier cascade\n" ); 
+		return; 
+	}
+	RECT rcBox;
+	detectAndDisplay(img_2_Orb, &rcBox); 
+	int rcNum = (rcBox.right-rcBox.left) * (rcBox.bottom-rcBox.top);
+	keyPoints_2_Orb.resize(rcNum);
+	for(int i=rcBox.left, k=0; i<rcBox.right; i++)
+	{
+		for (int j=rcBox.top; j<rcBox.bottom; j++,k++)
+		{
+			keyPoints_2_Orb[k].pt.x = i;
+			keyPoints_2_Orb[k].pt.y = j;
+		}
+	}
+
+	double t = (double)cvGetTickCount(); 
+	orb(img_1_Orb, Mat(), keyPoints_1_Orb, descriptors_1_Orb, true);
+	orb(img_2_Orb, Mat(), keyPoints_2_Orb, descriptors_2_Orb, true);
+
+	BruteForceMatcher<Hamming> matcher_Orb;
+	vector<DMatch> matches_Orb;
+	matcher_Orb.match(descriptors_1_Orb, descriptors_2_Orb, matches_Orb);
+
+	t = (double)cvGetTickCount() - t; 
+	printf( "matching time = %gms\n", t/((double)cvGetTickFrequency()*1000.) );
+	//double max_dist = 0;
+	//double min_dist = 100;
+	////-- Quick calculation of max and min distances between keypoints
+	//for (int i=0; i<descriptors_1_Orb.rows; i++)
+	//{ 
+	//	double dist = matches_Orb[i].distance;
+	//	if (dist < min_dist) min_dist = dist;
+	//	if(dist > max_dist) max_dist = dist;
+	//}
+	//printf("-- Max dist : %f \n", max_dist);
+	//printf("-- Min dist : %f \n", min_dist);
+
+	//-- Draw only "good" matches (i.e. whose distance is less than 0.6*max_dist )
+	// PS.- radiusMatch can also be used here.
+
+	//vector<DMatch> good_matches_Orb;
+	//for (int i=0; i<descriptors_1_Orb.rows; i++)
+	//{ 
+	//	//if(matches_Orb[i].distance < 0.7*max_dist)
+	//	{ 
+	//		good_matches_Orb.push_back(matches_Orb[i]); 
+	//	}
+	//}
+	//printf("Good matches countnum = %d \n", good_matches_Orb.size());
+
+	std::vector<cv::Point> kp1,kp2;
+	kp1.push_back(cvPoint(0,0));
+	kp2.push_back(cvPoint(0,0));
+	kp1.push_back(cvPoint(img_1_Orb.cols-1,0));
+	kp2.push_back(cvPoint(img_2_Orb.cols-1,0));
+	kp1.push_back(cvPoint(0,img_1_Orb.rows-1));
+	kp2.push_back(cvPoint(0,img_2_Orb.rows-1));
+	kp1.push_back(cvPoint(img_1_Orb.cols-1,img_1_Orb.rows-1));
+	kp2.push_back(cvPoint(img_2_Orb.cols-1,img_2_Orb.rows-1));
+	for(int i=0; i<93; i++)
+	{
+		if (i == 85)
+		{
+			continue;
+		}
+		DMatch k = matches_Orb[i];
+		kp1.push_back(keyPoints_1_Orb[k.queryIdx].pt);
+		kp2.push_back(keyPoints_2_Orb[k.trainIdx].pt);
+		//printf("%d :\n", i);
+		//printf("kp1:%d %d\n", kp1[i+4].x, kp1[i+4].y);
+		//printf("kp2:%d %d\n", kp2[i+4].x, kp2[i+4].y);
+	}
+	
+	CThinPlateSpline tps(kp1, kp2);
+	Mat sketch1 = imread("wholesketch.jpg");
+	Mat sketch2;
+	
+	double t2 = (double)cvGetTickCount(); 
+	tps.warpImage(sketch1,sketch2,0.01,INTER_CUBIC,BACK_WARP);
+	t2 = (double)cvGetTickCount() - t2; 
+	printf( "warping time = %gms\n", t2/((double)cvGetTickFrequency()*1000.) );
+	//Mat img_matches_Orb;
+
+	//vector<DMatch> sub_matches_Orb;
+	//for(int i=87;i<94;i++)
+	//{
+	//	sub_matches_Orb.push_back(matches_Orb[i]);
+	//}
+
+	//drawMatches(img_1_Orb, keyPoints_1_Orb, img_2_Orb, keyPoints_2_Orb,
+	//	sub_matches_Orb, img_matches_Orb, Scalar::all(-1), Scalar::all(-1),
+	//	vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+
+	 //display
+	//imshow("MatchORB", img_matches_Orb);
+	//for(int i=0; i<94;i++)
+	//{
+	//	circle(sketch2,kp2[i],1,Scalar(0,0,255),-1);
+	//	circle(sketch1,kp1[i],1,Scalar(0,0,255),-1);
+	//}
+	imshow("sketch1", sketch1);
+	imshow("sketch2", sketch2);
+	waitKey(0);
+}
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+	ULONG_PTR m_gdiplusToken; 
+	GdiplusStartupInput gdiplusStartupInput;     //声明
+	GdiplusStartup(&m_gdiplusToken, &gdiplusStartupInput, NULL);    //启动
+
+	string imageFilePath="";
+	char imgPath[MAX_PATH];
+	char imgDrive[_MAX_DRIVE];
+	_splitpath(_pgmptr,imgDrive,imgPath,NULL,NULL);
+
+	imageFilePath.append(imgDrive);
+	imageFilePath.append(imgPath);
+	imageFilePath.append("\sheldon1.bmp");
+
+	float* posPoint = new float[188];
+	procPic(imageFilePath.c_str(),posPoint);
+	ORBmatching(posPoint);
+	delete posPoint;
+	return 0;
 }
